@@ -1,0 +1,16 @@
+[package]
+name = "lvgl_rust_sys"
+version = "0.1.0"
+edition = "2021"
+
+[features]
+drivers = []
+rust_timer = []
+use-vendored-config = []
+
+[dependencies]
+
+
+[build-dependencies]
+bindgen = "0.70.1"
+cc = "1.1.18"
