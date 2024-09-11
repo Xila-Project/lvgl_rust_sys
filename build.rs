@@ -29,8 +29,6 @@ fn main() {
     let vendor = project_dir.join("vendor");
     let lvgl_src = project_dir.join("lvgl").join("src");
 
-    //println!("cargo:warnings={}", lvgl_src.to_str().unwrap());
-
     #[cfg(feature = "rust_timer")]
     let timer_shim = vendor.join("include").join("timer");
 
@@ -56,10 +54,13 @@ fn main() {
     let incl_extra =
         env::var("LVGL_INCLUDE").unwrap_or("/usr/include,/usr/local/include".to_string());
 
-    let cflags_extra = env::var("LVGL_CFLAGS").unwrap_or_default();
-    let cflags_extra = cflags_extra.split(',');
+    let cflags_extra_string = env::var("LVGL_CFLAGS").unwrap_or_default();
 
-    println!("cargo:warning=cflags_extra: {:?}", cflags_extra);
+    let cflags_extra = if cflags_extra_string.is_empty() {
+        None
+    } else {
+        Some(cflags_extra_string.split(','))
+    };
 
     #[cfg(feature = "drivers")]
     let link_extra = env::var("LVGL_LINK").unwrap_or("SDL2".to_string());
@@ -148,8 +149,6 @@ fn main() {
     #[cfg(feature = "drivers")]
     add_c_files(&mut cfg, &drivers);
 
-    println!("cargo:warnings= Finished adding c files");
-
     cfg.define("LV_CONF_INCLUDE_SIMPLE", Some("1"))
         .include(&lvgl_src)
         .include(&vendor)
@@ -165,14 +164,12 @@ fn main() {
     #[cfg(feature = "drivers")]
     cfg.includes(incl_extra.split(','));
 
-    cflags_extra.clone().for_each(|e| {
-        if e.is_empty() {
-            return;
-        }
-
-        let mut it = e.split('=');
-        cfg.define(it.next().unwrap(), it.next().unwrap_or_default());
-    });
+    if let Some(ref cflags_extra) = cflags_extra {
+        cflags_extra.clone().for_each(|e| {
+            let mut it = e.split('=');
+            cfg.define(it.next().unwrap(), it.next().unwrap_or_default());
+        });
+    }
 
     cfg.compile("lvgl");
 
@@ -240,17 +237,22 @@ fn main() {
     let bindings = bindings
         .header(shims_dir.join("lvgl_drv.h").to_str().unwrap())
         .parse_callbacks(Box::new(ignored_macros));
-    //#[cfg(feature = "rust_timer")]
-    //let bindings = bindings.header(shims_dir.join("rs_timer.h").to_str().unwrap());
+    #[cfg(feature = "rust_timer")]
+    let bindings = bindings.header(shims_dir.join("rs_timer.h").to_str().unwrap());
+
     let bindings = bindings
         .generate_comments(false)
         .derive_default(true)
         .layout_tests(false)
         .use_core()
-        .ctypes_prefix("cty")
+        .ctypes_prefix("core::ffi")
         .clang_args(&cc_args)
         .clang_args(&additional_args)
-        .clang_args(cflags_extra.map(|f| format!("-D{f}")))
+        .clang_args(
+            cflags_extra
+                .map(|s| s.collect::<Vec<_>>())
+                .unwrap_or(Vec::new()),
+        )
         .generate()
         .expect("Unable to generate bindings");
 
@@ -287,15 +289,12 @@ fn add_font_headers(
 }
 
 fn add_c_files(build: &mut cc::Build, path: impl AsRef<Path>) {
-    //println!("cargo:warning={:?}", path.as_ref());
-
     for e in path.as_ref().read_dir().unwrap() {
         let e = e.unwrap();
         let path = e.path();
         if e.file_type().unwrap().is_dir() {
             add_c_files(build, e.path());
         } else if path.extension().and_then(|s| s.to_str()) == Some("c") {
-            //println!("cargo:warning={:?}", path.to_str().unwrap());
             build.file(&path);
         }
     }
