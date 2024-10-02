@@ -20,7 +20,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-use core::{ptr, usize, ffi::{c_char, c_int}};
+use core::{
+    ffi::{c_char, c_int},
+    ptr, usize,
+};
 type size_t = usize;
 
 #[no_mangle]
