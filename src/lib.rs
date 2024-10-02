@@ -11,6 +11,7 @@ pub fn _bindgen_raw_src() -> &'static str {
     include_str!(concat!(env!("OUT_DIR"), "/bindings.rs"))
 }
 
+#[cfg(feature = "use-string-functions")]
 mod string_impl;
 
 #[cfg(test)]

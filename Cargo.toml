@@ -4,9 +4,11 @@ version = "0.1.0"
 edition = "2021"
 
 [features]
+default = ["use-string-functions"]
 drivers = []
 rust_timer = []
 use-vendored-config = []
+use-string-functions = []
 
 [dependencies]
 
