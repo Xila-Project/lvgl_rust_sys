@@ -11,6 +11,10 @@ pub fn _bindgen_raw_src() -> &'static str {
     include_str!(concat!(env!("OUT_DIR"), "/bindings.rs"))
 }
 
+pub fn _bindgen_raw_c_header() -> &'static str {
+    include_str!("../lvgl/lvgl.h")
+}
+
 #[cfg(feature = "use-string-functions")]
 mod string_impl;
 
