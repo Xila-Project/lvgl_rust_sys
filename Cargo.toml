@@ -10,6 +10,12 @@ rust_timer = []
 use-vendored-config = []
 use-string-functions = []
 
+color_depth_1 = []
+color_depth_8 = []
+color_depth_16 = []
+color_depth_24 = []
+color_depth_32 = []
+
 [dependencies]
 
 

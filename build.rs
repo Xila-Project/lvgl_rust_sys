@@ -23,6 +23,22 @@ impl bindgen::callbacks::ParseCallbacks for IgnoreMacros {
     }
 }
 
+fn get_color_depth() -> Option<&'static str> {
+    if std::env::var_os("CARGO_FEATURE_COLOR_DEPTH_1").is_some() {
+        Some("1")
+    } else if std::env::var_os("CARGO_FEATURE_COLOR_DEPTH_8").is_some() {
+        Some("8")
+    } else if std::env::var_os("CARGO_FEATURE_COLOR_DEPTH_16").is_some() {
+        Some("16")
+    } else if std::env::var_os("CARGO_FEATURE_COLOR_DEPTH_24").is_some() {
+        Some("24")
+    } else if std::env::var_os("CARGO_FEATURE_COLOR_DEPTH_32").is_some() {
+        Some("32")
+    } else {
+        None
+    }
+}
+
 fn main() {
     let project_dir = canonicalize(PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap()));
     let shims_dir = project_dir.join("shims");
@@ -169,6 +185,10 @@ fn main() {
             let mut it = e.split('=');
             cfg.define(it.next().unwrap(), it.next().unwrap_or_default());
         });
+    }
+
+    if let Some(depth) = get_color_depth() {
+        cfg.define("LV_COLOR_DEPTH", Some(depth));
     }
 
     cfg.compile("lvgl");
