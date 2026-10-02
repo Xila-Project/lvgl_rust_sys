@@ -45,6 +45,15 @@ fn main() {
     let vendor = project_dir.join("vendor");
     let lvgl_src = project_dir.join("lvgl").join("src");
 
+    println!(
+        "cargo:rerun-if-changed={}",
+        shims_dir.join("lvgl_sys.h").display()
+    );
+    println!(
+        "cargo:rerun-if-changed={}",
+        shims_dir.join("lvgl_sys.c").display()
+    );
+
     #[cfg(feature = "rust_timer")]
     let timer_shim = vendor.join("include").join("timer");
 

@@ -20,5 +20,5 @@ color_depth_32 = []
 
 
 [build-dependencies]
-bindgen = "0.70.1"
+bindgen = "0.72.1"
 cc = "1.1.18"
